@@ -82,8 +82,8 @@ class ProjetoController extends Controller
             ]);
 
             $projeto->update([
-                'titulo' => $projetoValidado['titulo'] ?? $projeto->titulo,
-                'descricao' => $projetoValidado['descricao'] ?? $projeto->descricao,
+                'titulo'       => $projetoValidado['titulo'] ?? $projeto->titulo,
+                'descricao'    => $projetoValidado['descricao'] ?? $projeto->descricao,
                 'data_entrega' => $projetoValidado['data_entrega'] ?? $projeto->data_entrega,
             ]);
 

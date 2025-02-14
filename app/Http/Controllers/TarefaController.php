@@ -1,7 +1,7 @@
 <?php
-
 namespace App\Http\Controllers;
 
+use App\Enum\Status;
 use App\Models\Tarefa;
 use Illuminate\Http\Request;
 
@@ -12,7 +12,13 @@ class TarefaController extends Controller
      */
     public function index()
     {
-        //
+        try {
+            $tarefa = Tarefa::paginate(10);
+
+            return view('tarefa.index', compact($tarefa));
+        } catch (\Exception $e) {
+            return redirect()->route('erro.generico')->with('error', 'Erro ao carregar tarefas!');
+        }
     }
 
     /**
@@ -20,7 +26,7 @@ class TarefaController extends Controller
      */
     public function create()
     {
-        //
+        return view('tarefa.create');
     }
 
     /**
@@ -28,7 +34,24 @@ class TarefaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $tarefasValidadas = $request->validate([
+                'descricao'  => 'required|string|max:255',
+                'status'     => 'required|in:' . Status::PENDENTE . ',' . Status::CONCLUIDO,
+                'id_projeto' => 'required|exists:projeto,id',
+            ]);
+
+            $tarefa = Tarefa::create([
+                'descricao'  => $tarefasValidadas['descricao'],
+                'status'     => $tarefasValidadas['status'],
+                'id_projeto' => $tarefasValidadas['id_projeto'],
+            ]);
+
+            return response()->json($tarefa, 201);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Ocorreu um erro ao criar uma nova tarefa.'], 400);
+        }
     }
 
     /**
@@ -36,7 +59,7 @@ class TarefaController extends Controller
      */
     public function show(Tarefa $tarefa)
     {
-        //
+        return response()->json(['tarefa' => $tarefa], 200);
     }
 
     /**
@@ -44,7 +67,7 @@ class TarefaController extends Controller
      */
     public function edit(Tarefa $tarefa)
     {
-        //
+        return view('tarefa.edit');
     }
 
     /**
@@ -52,7 +75,23 @@ class TarefaController extends Controller
      */
     public function update(Request $request, Tarefa $tarefa)
     {
-        //
+        try {
+            $tarefasValidadas = $request->validate([
+                'descricao'  => 'required|string|max:255',
+                'status'     => 'required|in:' . Status::PENDENTE . ',' . Status::CONCLUIDO,
+                'id_projeto' => 'required|exists:projeto,id',
+            ]);
+
+            $tarefa->update([
+                'descricao'  => $tarefasValidadas['descricao'] ?? $tarefa->descricao,
+                'status'     => $tarefasValidadas['status'] ?? $tarefa->status,
+                'id_projeto' => $tarefasValidadas['id_projeto'] ?? $tarefa->id_projeto,
+            ]);
+
+            return response()->json($tarefa, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Ocorreu um erro ao atualizar a tarefa.'], 400);
+        }
     }
 
     /**
@@ -60,6 +99,9 @@ class TarefaController extends Controller
      */
     public function destroy(Tarefa $tarefa)
     {
-        //
+        $tarefa->delete();
+
+        return response()->json(['message' => 'Tarefa deletada.'], 200);
+
     }
 }
