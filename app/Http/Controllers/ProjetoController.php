@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Projeto;
@@ -12,7 +11,13 @@ class ProjetoController extends Controller
      */
     public function index()
     {
-        return view('projeto.index');
+        try {
+            $projeto = Projeto::paginate(10);
+
+            return view('projeto.index', compact($projeto));
+        } catch (\Exception $e) {
+            return redirect()->route('erro.generico')->with('error', 'Erro ao carregar projetos!');
+        }
     }
 
     /**
@@ -20,7 +25,7 @@ class ProjetoController extends Controller
      */
     public function create()
     {
-        //
+        return view('projeto.create');
     }
 
     /**
@@ -28,7 +33,24 @@ class ProjetoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $projetoValidado = $request->validate([
+                'titulo'       => 'required|string|max:255',
+                'descricao'    => 'nullable|string|max:255',
+                'data_entrega' => 'required|date',
+            ]);
+
+            $projeto = Projeto::create([
+                'titulo'       => $projetoValidado['titulo'],
+                'descricao'    => $projetoValidado['descricao'],
+                'data_entrega' => $projetoValidado['data_entrega'],
+            ]);
+
+            return response()->json($projeto, 201);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Ocorreu um erro ao criar um novo projeto.'], 400);
+        }
     }
 
     /**
@@ -36,7 +58,7 @@ class ProjetoController extends Controller
      */
     public function show(Projeto $projeto)
     {
-        //
+        return response()->json(['projeto' => $projeto], 200);
     }
 
     /**
@@ -44,7 +66,7 @@ class ProjetoController extends Controller
      */
     public function edit(Projeto $projeto)
     {
-        //
+        return view('projeto.edit');
     }
 
     /**
@@ -52,7 +74,24 @@ class ProjetoController extends Controller
      */
     public function update(Request $request, Projeto $projeto)
     {
-        //
+        try {
+            $projetoValidado = $request->validate([
+                'titulo'       => 'required|string|max:255',
+                'descricao'    => 'nullable|string|max:255',
+                'data_entrega' => 'required|date',
+            ]);
+
+            $projeto->update([
+                'titulo' => $projetoValidado['titulo'] ?? $projeto->titulo,
+                'descricao' => $projetoValidado['descricao'] ?? $projeto->descricao,
+                'data_entrega' => $projetoValidado['data_entrega'] ?? $projeto->data_entrega,
+            ]);
+
+            return response()->json($projeto, 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Ocorreu um erro ao atualizar o projeto.'], 400);
+        }
     }
 
     /**
@@ -60,6 +99,8 @@ class ProjetoController extends Controller
      */
     public function destroy(Projeto $projeto)
     {
-        //
+        $projeto->delete();
+
+        return response()->json(['message' => 'Projeto deletado.'], 200);
     }
 }
