@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('descricao');
             $table->integer('status')->default(0)->comment('0 = pendente, 1 = concluída / padrão: pendente');
-            $table->foreignId('id_projetos')->constrained('projetos');
+            $table->foreignId('id_projeto')->constrained('projetos');
             $table->timestamps();
         });
     }
